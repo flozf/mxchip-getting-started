@@ -14,6 +14,8 @@ set(SOURCES
     screen.c
     main.c
     wwd_networking.c
+    mcp9808.c
+    tools/string.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -29,13 +31,13 @@ target_link_libraries(${PROJECT_NAME}
     jsmn
 )
 
-target_include_directories(${PROJECT_NAME} 
-    PUBLIC 
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
         .
 )
 
-target_link_directories(${PROJECT_NAME} 
-    PUBLIC 
+target_link_directories(${PROJECT_NAME}
+    PUBLIC
         startup
 )
 

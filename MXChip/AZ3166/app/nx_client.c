@@ -21,11 +21,16 @@
 #include "azure_pnp_info.h"
 #include "wwd_networking.h"
 
+#include "tools/string.h"
+#include "ssd1306.h"
+#include "mcp9808.h"
+
 #define IOT_MODEL_ID "dtmi:azurertos:devkit:gsgmxchip;2"
 
 // Device telemetry names
 #define TELEMETRY_HUMIDITY          "humidity"
 #define TELEMETRY_TEMPERATURE       "temperature"
+#define TELEMETRY_TEMPERATURE2      "temperature2"
 #define TELEMETRY_PRESSURE          "pressure"
 #define TELEMETRY_MAGNETOMETERX     "magnetometerX"
 #define TELEMETRY_MAGNETOMETERY     "magnetometerY"
@@ -111,6 +116,36 @@ static UINT append_device_telemetry(NX_AZURE_IOT_JSON_WRITER* json_writer)
 {
     lps22hb_t lps22hb_data    = lps22hb_data_read();
     hts221_data_t hts221_data = hts221_data_read();
+    double mcp9808_temp       = mcp9808_read();
+
+    // TODO: the screen update should be put elsewhere
+    ssd1306_Fill(Black);
+
+    char buf[100];
+    ssd1306_SetCursor(0, 7);
+    ssd1306_WriteString("onboard", Font_7x10, White);
+    ssd1306_SetCursor(0, 29);
+    ssd1306_WriteString("mcp9808", Font_7x10, White);
+
+    fk_dtoa( lps22hb_data.temperature_degC, -2, buf, sizeof buf );
+    strcat( buf, " C" );
+    ssd1306_SetCursor(52, 0);
+    ssd1306_WriteString(buf, Font_11x18, White);
+    ssd1306_DrawCircle( 112, 4, 2, White );
+    ssd1306_DrawCircle( 112, 4, 3, White );
+
+    ssd1306_SetCursor(52, 22);
+    if( mcp9808_temp > -9000.0 ) {
+        fk_dtoa( mcp9808_temp, -2, buf, sizeof buf );
+        strcat( buf, " C" );
+        ssd1306_WriteString(buf, Font_11x18, White);
+        ssd1306_DrawCircle( 112, 26, 2, White );
+        ssd1306_DrawCircle( 112, 26, 3, White );
+    } else {
+        ssd1306_WriteString("---", Font_11x18, White);
+    }
+
+    ssd1306_UpdateScreen();
 
     if (nx_azure_iot_json_writer_append_property_with_double_value(
             json_writer, (UCHAR*)TELEMETRY_HUMIDITY, sizeof(TELEMETRY_HUMIDITY) - 1, hts221_data.humidity_perc, 2) ||
@@ -119,6 +154,12 @@ static UINT append_device_telemetry(NX_AZURE_IOT_JSON_WRITER* json_writer)
             (UCHAR*)TELEMETRY_TEMPERATURE,
             sizeof(TELEMETRY_TEMPERATURE) - 1,
             lps22hb_data.temperature_degC,
+            2) ||
+
+        nx_azure_iot_json_writer_append_property_with_double_value(json_writer,
+            (UCHAR*)TELEMETRY_TEMPERATURE2,
+            sizeof(TELEMETRY_TEMPERATURE2) - 1,
+            mcp9808_temp,
             2) ||
 
         nx_azure_iot_json_writer_append_property_with_double_value(

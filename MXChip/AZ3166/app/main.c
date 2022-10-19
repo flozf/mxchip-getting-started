@@ -15,6 +15,7 @@
 #include "nx_client.h"
 
 #include "azure_config.h"
+#include "mcp9808.h"
 
 #define AZURE_THREAD_STACK_SIZE 4096
 #define AZURE_THREAD_PRIORITY   4
@@ -70,6 +71,8 @@ int main(void)
 {
     // Initialize the board
     board_init();
+
+    mcp9808_init();
 
     // Enter the ThreadX kernel
     tx_kernel_enter();

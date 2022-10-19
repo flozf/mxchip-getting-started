@@ -60,9 +60,10 @@ void Init_Screen(void)
         res = HAL_I2C_IsDeviceReady(&I2cHandle, i << 1, i, 10);
         if (res == HAL_OK)
         {
-            char msg[64];
-            snprintf(msg, sizeof(msg), "0x%02x", i);
-            printf(msg);
+            //char msg[64];
+            //printf(msg, sizeof(msg), "0x%02x ", i);
+            //printf(msg);
+            printf("0x%02x ", i);
         }
         else
         {
